@@ -1,12 +1,14 @@
 package com.observer.entity;
 
 import com.observer.action.ObserverAction;
+import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+@Getter
 @Entity
 public class Observer implements ObserverAction {
     @Id
