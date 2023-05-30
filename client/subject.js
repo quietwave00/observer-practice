@@ -1,22 +1,20 @@
-document.getElementById("subscribe-button").addEventListener('click', function() {
-    for(let i = 1; i <= 3; i++) {
-        const eventSource = new EventSource('http://localhost:8080/subscribe/' + i);
+function subscribeButtonClickHandler(i) {
+    const eventSource = new EventSource('http://localhost:8080/subscribe/' + i);
 
-        eventSource.addEventListener('message', (e) => {
-            const message = e.data;
-            console.log("message: "  + message);
-        })
-    }
+    eventSource.addEventListener('message', (e) => {
+        const message = e.data;
+        console.log("message: " + message);
+    });
+}
+
+document.getElementById("subscribe-button1").addEventListener('click', function() {
+    subscribeButtonClickHandler(1);
 });
-    
-document.getElementById("upload-button").addEventListener("click", function() {
-    fetch('http://localhost:8080/upload', {
-        method: "GET"
-    })
-    .then((response) => {
-        return response.text();
-    })
-    .then((data) => {
-        const msg = data;
-    })
+
+document.getElementById("subscribe-button2").addEventListener('click', function() {
+    subscribeButtonClickHandler(2);
+});
+
+document.getElementById("subscribe-button3").addEventListener('click', function() {
+    subscribeButtonClickHandler(3);
 });
