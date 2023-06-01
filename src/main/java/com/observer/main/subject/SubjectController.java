@@ -1,6 +1,7 @@
 package com.observer.main.subject;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,13 +18,13 @@ public class SubjectController {
     private final SubjectService service;
 
 
-    @GetMapping("/subscribe/{observerId}")
-    public SseEmitter subscribe(@PathVariable("observerId") Long observerId) {
+    @GetMapping(value = "/subscribe/{observerId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@PathVariable("observerId") Long observerId) throws IOException {
         return service.subscribe(observerId);
     }
 
     @GetMapping("/upload")
-    public String upload() throws IOException {
-        return service.upload();
+    public void upload() throws IOException {
+        service.upload();
     }
 }

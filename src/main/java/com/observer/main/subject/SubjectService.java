@@ -19,24 +19,25 @@ public class SubjectService {
     private final ObserverRepository observerRepository;
     private final SubjectRepository subjectRepository;
 
-    public SseEmitter subscribe(Long observerId) {
+    public SseEmitter subscribe(Long observerId) throws IOException {
         Subject beforeSubject = subjectRepository.findBySubjectId(1L);
         Observer findObserver = observerRepository.findByObserverId(observerId);
         beforeSubject.subscribe(findObserver);
         Subject afterSubject = subjectRepository.save(beforeSubject);
 
         SseEmitter emitter = new SseEmitter();
+        emitter.send(SseEmitter.event().name("init"));
         emitter.onCompletion(() -> afterSubject.getObserverList().remove(findObserver));
+
+
         EmitterStorage.addEmitter(observerId, emitter);
 
         return emitter;
     }
 
-    public String upload() throws IOException {
-        SseEmitter emitter = EmitterStorage.getEmitter(userId);
-
+    public void upload() throws IOException {
         Subject findSubject = subjectRepository.findBySubjectId(1L);
-        return findSubject.upload();
+        findSubject.upload();
     }
 
 

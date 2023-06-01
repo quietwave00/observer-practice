@@ -3,6 +3,7 @@ package com.observer.entity;
 import com.observer.action.SubjectAction;
 import com.observer.main.subject.SubjectSseEmitterQueue;
 import com.observer.main.subject.SubjectSseEmitterStack;
+import com.observer.main.subject.storage.EmitterStorage;
 import lombok.Getter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -37,11 +38,10 @@ public class Subject implements SubjectAction {
 
     @Override
     public void notifyToObserver(String msg) throws IOException {
-        for(Observer observer : observerList) {
-            SseEmitter emitter = SubjectSseEmitterStack.getOne();
-            System.out.println("notify : " + emitter);
+        List<SseEmitter> emitterList = EmitterStorage.getEmitterList();
+
+        for (SseEmitter emitter : emitterList) {
             emitter.send(SseEmitter.event().data(msg));
-            observer.update(msg);
         }
     }
 
@@ -49,11 +49,10 @@ public class Subject implements SubjectAction {
         return SubjectSseEmitterStack.getOne();
     }
 
-    public String upload() throws IOException {
+    public void upload() throws IOException {
         System.out.println("영상 제작 중...");
         String msg = "영상이 올라갈 거예요";
         notifyToObserver(msg);
-        return msg;
     }
 
     public void complete() throws IOException {
