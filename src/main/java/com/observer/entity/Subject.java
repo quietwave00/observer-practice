@@ -1,11 +1,10 @@
 package com.observer.entity;
 
 import com.observer.action.SubjectAction;
-import com.observer.main.subject.SubjectSseEmitterQueue;
-import com.observer.main.subject.SubjectSseEmitterStack;
-import com.observer.main.subject.storage.EmitterStorage;
+import com.observer.main.sse.EmitterStorage;
 import lombok.Getter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.yaml.snakeyaml.emitter.Emitter;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class Subject implements SubjectAction {
 
     public String name;
 
-    @OneToMany
+    @OneToMany(mappedBy = "subject")
     public List<Observer> observerList = new ArrayList<>();
 
 
@@ -37,25 +36,27 @@ public class Subject implements SubjectAction {
     }
 
     @Override
-    public void notifyToObserver(String msg) throws IOException {
+    public void notifyToObserver(String msg){
         List<SseEmitter> emitterList = EmitterStorage.getEmitterList();
 
         for (SseEmitter emitter : emitterList) {
-            emitter.send(SseEmitter.event().data(msg));
+            Long observerId = EmitterStorage.getObserverIdByEmitter(emitter);
+            try {
+                emitter.send(SseEmitter.event().data(msg));
+            } catch(IOException e) {
+                EmitterStorage.removeEmitter(observerId);
+            }
+
         }
     }
 
-    public SseEmitter getSseEmitter() {
-        return SubjectSseEmitterStack.getOne();
-    }
-
-    public void upload() throws IOException {
+    public void upload(){
         System.out.println("영상 제작 중...");
         String msg = "영상이 올라갈 거예요";
         notifyToObserver(msg);
     }
 
-    public void complete() throws IOException {
+    public void complete(){
         System.out.println("영상 업로드 완료...");
         notifyToObserver("영상이 새로 추가되었어요");
     }
