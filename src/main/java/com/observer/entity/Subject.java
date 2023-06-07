@@ -42,7 +42,7 @@ public class Subject implements SubjectAction {
         for (SseEmitter emitter : emitterList) {
             Long observerId = EmitterStorage.getObserverIdByEmitter(emitter);
             try {
-                emitter.send(SseEmitter.event().data(msg));
+                emitter.send(SseEmitter.event().name("message").data(msg));
             } catch(IOException e) {
                 EmitterStorage.removeEmitter(observerId);
             }
