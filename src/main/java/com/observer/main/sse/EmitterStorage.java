@@ -2,6 +2,7 @@ package com.observer.main.sse;
 
 import lombok.Getter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.yaml.snakeyaml.emitter.Emitter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,14 @@ public class EmitterStorage {
 
     private static final Map<Long, SseEmitter> emitterMap = new ConcurrentHashMap<>();
     private static final Map<SseEmitter, Long> observerMap = new ConcurrentHashMap<>();
+    private static final List<SseEmitter> emitters = new ArrayList<>();
+    public static int getEmitterMapSize() {
+        return emitterMap.size();
+    }
+
+    public static int getObserverMapSize() {
+        return observerMap.size();
+    }
 
     //emitterMap Method
     public static SseEmitter getEmitterByObserverId(Long observerId) {
@@ -20,7 +29,7 @@ public class EmitterStorage {
     }
 
     public static List<SseEmitter> getEmitterList() {
-        List<SseEmitter> emitters = new ArrayList<>();
+
         for (Map.Entry<Long, SseEmitter> entry : emitterMap.entrySet()) {
             SseEmitter emitter = entry.getValue();
             emitters.add(emitter);
@@ -36,12 +45,27 @@ public class EmitterStorage {
         emitterMap.remove(userId);
     }
 
+    public static void removeEmitter(SseEmitter emitter) {
+        observerMap.remove(emitter);
+    }
+
     //observerMap Method
     public static Long getObserverIdByEmitter(SseEmitter emitter) {
         return observerMap.get(emitter);
     }
 
+    public static SseEmitter getObserverMapByObserverId(Long observerId) {
+        for(SseEmitter emitter : observerMap.keySet()) {
+            if(observerMap.get(emitter).equals(observerId)) {
+                return emitter;
+
+            }
+        }
+        return null;
+    }
+
     public static void addObserverId(SseEmitter emitter, Long userId) {
+        System.out.println("add observer");
         observerMap.put(emitter, userId);
     }
 
