@@ -4,7 +4,6 @@ import com.observer.action.SubjectAction;
 import com.observer.main.sse.EmitterStorage;
 import lombok.Getter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import org.yaml.snakeyaml.emitter.Emitter;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -21,7 +20,7 @@ public class Subject implements SubjectAction {
 
     public String name;
 
-    @OneToMany(mappedBy = "subject")
+    @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
     public List<Observer> observerList = new ArrayList<>();
 
 
@@ -37,17 +36,16 @@ public class Subject implements SubjectAction {
 
     @Override
     public void notifyToObserver(String msg){
-        List<SseEmitter> emitterList = EmitterStorage.getEmitterList();
-
-        for (SseEmitter emitter : emitterList) {
-            Long observerId = EmitterStorage.getObserverIdByEmitter(emitter);
+        int size = EmitterStorage.getMapSize();
+        for (long i = 1L; i <= size; i++) {
             try {
-                emitter.send(SseEmitter.event().name("message").data(msg));
+                EmitterStorage.emitterDtoMap.get(i).getSseEmitter().send(SseEmitter.event().name("message").data(msg));
             } catch(IOException e) {
-                EmitterStorage.removeEmitter(observerId);
+                e.printStackTrace();
             }
-
         }
+
+
     }
 
     public void upload(){
