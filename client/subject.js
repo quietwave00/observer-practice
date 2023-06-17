@@ -1,8 +1,6 @@
 function subscribeButtonClickHandler(i) {
     console.log("Subscribing");
-    let eventSource = new EventSource('http://localhost:8080/subscribe/' + i);
-
-    
+    let eventSource = new EventSource('http://localhost:8080/subscribe/' + i);    
 }
 
 document.getElementById("subscribe-button1").addEventListener('click', function() {
@@ -21,10 +19,5 @@ document.getElementById('upload-button').addEventListener('click', function() {
     fetch('http://localhost:8080/upload')
     .then((response) =>
         console.log("Success")
-    );
-
-    eventSource.onmessage = function(event) {
-        const eventData = event.data;
-        console.log(eventData);
-    };
-})
+    )
+});
