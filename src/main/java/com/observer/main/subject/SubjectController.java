@@ -19,18 +19,21 @@ public class SubjectController {
     private final SubjectService service;
 
 
+
+
     @GetMapping(value = "/subscribe/{observerId}", produces = "text/event-stream")
-    public CompletableFuture<SseEmitter> subscribe(@PathVariable("observerId") Long observerId,
+    public SseEmitter subscribe(@PathVariable("observerId") Long observerId,
                                                    @RequestHeader(value = "Last-Event_Id", required = false, defaultValue = "") String lastEventId) throws IOException {
         System.out.println("subject 알림 활성화 요청 들어옴");
         return service.subscribe(observerId);
     }
 
     @GetMapping(value = "/alerts/{observerId}", produces = "text/event-stream")
-    public CompletableFuture<SseEmitter> alert(@PathVariable("observerId") Long observerId) throws InterruptedException, ExecutionException {
+    public SseEmitter alert(@PathVariable("observerId") Long observerId) throws InterruptedException, ExecutionException, IOException {
         System.out.println("observer 요청 들어옴");
         return service.alert(observerId);
     }
+
 
     @GetMapping("/upload")
     public void upload() throws IOException {

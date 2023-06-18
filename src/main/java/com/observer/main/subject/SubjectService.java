@@ -6,13 +6,14 @@ import com.observer.main.EmitterDto;
 import com.observer.main.observer.ObserverRepository;
 import com.observer.main.sse.EmitterStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.yaml.snakeyaml.emitter.Emitter;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -23,44 +24,57 @@ public class SubjectService {
     private final ObserverRepository observerRepository;
     private final SubjectRepository subjectRepository;
     private final CompletableFuture<SseEmitter> future = new CompletableFuture<>();
-    public CompletableFuture<SseEmitter> subscribe(Long observerId) throws IOException {
+    public SseEmitter subscribe(Long observerId) throws IOException {
         dataSetting(observerId);
-        SseEmitter emitter = new SseEmitter();
-        EmitterDto dto = new EmitterDto(emitter, observerId);
-        emitter.send(SseEmitter.event().name("init").data("EventStream Created"));
-
-        EmitterStorage.addEmitter(observerId, dto);
-
-        emitter.onCompletion(() -> {
-            System.out.println("emitter.onCompletion() Run");
-            EmitterStorage.removeEmitter(observerId);
-        });
-        emitter.onTimeout(() -> {
-            System.out.println("emitter.onTimeout() Run");
-            EmitterStorage.removeEmitter(observerId);
-        });
-
-        future.complete(emitter); // CompletableFuture에 결과 값을 설정
 
         System.out.println("emitterSize :" + EmitterStorage.getMapSize());
         System.out.println("observerSize : " + EmitterStorage.getMapSize());
-
-        return future;
+        return EmitterStorage.addEmitter(observerId);
     }
 
-    public CompletableFuture<SseEmitter> alert(Long observerId) {
-        return future.thenApplyAsync(result -> {
-            SseEmitter emitter = EmitterStorage.getEmitterByObserverId(observerId);
-            if (emitter != null) {
-                return emitter;
-            } else {
-                try {
-                    return subscribe(observerId).join();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+    public SseEmitter alert(Long observerId) throws IOException, InterruptedException {
+
+        try {
+            return EmitterStorage.getEmitterDtoByObserverId(observerId).getSseEmitter();
+
+        } catch (NullPointerException e) {
+            EmitterStorage.addEmitter(observerId);
+            return EmitterStorage.getEmitterDtoByObserverId(observerId).getSseEmitter();
+        }
+
+
+
+//        if(!dto.isTimeout()) {
+//            EmitterStorage.removeEmitter(observerId);
+//            dto.setTimeout(true);
+//            dto.setResult(false);
+//            EmitterStorage.addEmitter(observerId, dto);
+//        }
+//
+//        if(!dto.isResult()) {
+//            try {
+//                return subscribe(observerId).join();
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        } else {
+//            return dto.getSseEmitter();
+//        }
+
+
+//        return future.thenApplyAsync(result -> {
+//            SseEmitter emitter = EmitterStorage.getEmitterByObserverId(observerId);
+//            if (emitter != null) {
+//                return emitter;
+//            } else {
+//                try {
+//                    return subscribe(observerId).join();
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        });
+
     }
     @Transactional
     public void dataSetting(final Long observerId) {
