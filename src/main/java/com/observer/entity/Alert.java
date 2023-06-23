@@ -15,4 +15,10 @@ public class Alert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long alertId;
 
+    public String observer;
+
+    public String message;
+
+    public Boolean isRead;
+
 }
